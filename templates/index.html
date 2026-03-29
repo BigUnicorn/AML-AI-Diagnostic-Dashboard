@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AML-AI | Diagnostic Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --mll-blue: #004a99; --mll-dark: #002b59; }
+        body { background: #f4f7f9; font-family: 'Segoe UI', sans-serif; }
+        .chart-container { position: relative; height: 280px; width: 100%; margin: auto; }
+        .header-bar { background: var(--mll-dark); color: white; padding: 20px 0; border-radius: 0 0 25px 25px; }
+        .card { border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .upload-box { border: 2px dashed var(--mll-blue); border-radius: 12px; padding: 30px; cursor: pointer; transition: 0.2s; }
+        .upload-box:hover { background: #f0f6ff; }
+        #previewImg { max-height: 200px; border-radius: 8px; display: none; margin: 15px auto; border: 1px solid #ddd; }
+        .result-panel { display: none; background: #eef9f1; border-left: 5px solid #28a745; padding: 15px; border-radius: 8px; }
+        .eval-img { width: 100%; border-radius: 8px; border: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+<div class="header-bar text-center mb-4">
+    <div class="container">
+        <h4><i class="fas fa-microscope me-2"></i>AML AI Diagnostic Dashboard</h4>
+        <p class="mb-0 small opacity-75">WHO 2022 & Munich Leukemia Laboratory (MLL) Standard</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row g-3">
+        
+        <div class="col-lg-4">
+            <div class="card p-3 h-100">
+                <h6 class="fw-bold border-bottom pb-2 mb-3">VERİ SETİ ÖZETİ</h6>
+                <div class="d-flex justify-content-between mb-2"><span>Toplam Görüntü:</span><span class="fw-bold text-primary">81,214</span></div>
+                <div class="d-flex justify-content-between mb-2"><span>Eğitim Seti:</span><span class="fw-bold text-muted">64,972</span></div>
+                <div class="d-flex justify-content-between mb-4"><span>Çözünürlük:</span><span class="fw-bold">144x144 px</span></div>
+                
+                <h6 class="fw-bold border-bottom pb-2 mb-3">MODEL PERFORMANSI</h6>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small"><span>Genel Doğruluk (Accuracy)</span><span class="fw-bold text-success">%{{ (metrics.accuracy * 100)|int }}</span></div>
+                    <div class="progress" style="height: 6px;"><div class="progress-bar bg-success" style="width: 59%"></div></div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small"><span>Sağlıklı Hücre Tanıma (Control F1)</span><span class="fw-bold text-info">%82</span></div>
+                    <div class="progress" style="height: 6px;"><div class="progress-bar bg-info" style="width: 82%"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card p-3">
+                <h6 class="fw-bold text-center mb-2">SINIF BAZLI GÖRÜNTÜ DAĞILIMI (TOTAL 81K)</h6>
+                <div class="chart-container">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-5">
+                        <div class="upload-box text-center" onclick="document.getElementById('fileInput').click()">
+                            <input type="file" id="fileInput" hidden accept="image/*" onchange="preview(this)">
+                            <i class="fas fa-file-medical-alt fa-3x text-primary mb-2"></i>
+                            <p id="fileName" class="mb-0 small fw-bold">Hücre görseli yüklemek için tıklayın</p>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <img id="previewImg" src="#" alt="Önizleme">
+                        <div id="resultPanel" class="result-panel shadow-sm">
+                            <h5 id="resClass" class="fw-bold text-dark mb-1">--</h5>
+                            <p id="resDesc" class="text-muted small mb-2"></p>
+                            <div class="d-flex justify-content-between border-top pt-2">
+                                <span class="small fw-bold">Tespit Güveni:</span>
+                                <span id="resConf" class="text-primary fw-bold">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button id="runBtn" class="btn btn-primary btn-lg w-100 mt-3 py-3 fw-bold" onclick="analyze()" disabled>
+                    <i class="fas fa-brain me-2"></i> ANALİZİ BAŞLAT
+                </button>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card p-3">
+                <h6 class="fw-bold border-bottom pb-2 mb-3 text-center text-uppercase">Model Eğitim ve Validasyon Raporu</h6>
+                <div class="row g-3 text-center">
+                    <div class="col-md-6">
+                        <p class="small fw-bold text-muted mb-1">KARMAŞIKLIK MATRİSİ (CONFUSION MATRIX)</p>
+                        <img src="{{ url_for('static', filename='confusion_matrix.png') }}" class="eval-img" alt="Confusion Matrix">
+                    </div>
+                    <div class="col-md-6">
+                        <p class="small fw-bold text-muted mb-1">EĞİTİM GEÇMİŞİ (ACCURACY & LOSS)</p>
+                        <img src="{{ url_for('static', filename='training_plots.png') }}" class="eval-img" alt="Training Plots">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // --- Bar Chart (Sonsuz büyüme engellenmiş) ---
+    const ctx = document.getElementById('barChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ stats.labels | safe }},
+            datasets: [{
+                label: 'Görüntü Sayısı',
+                data: {{ stats.counts | safe }},
+                backgroundColor: '#004a99',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    function preview(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('previewImg').style.display = 'block';
+                document.getElementById('runBtn').disabled = false;
+                document.getElementById('fileName').innerText = input.files[0].name;
+                document.getElementById('resultPanel').style.display = 'none';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    async function analyze() {
+        const fileInput = document.getElementById('fileInput');
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        document.getElementById('runBtn').innerText = "Hesaplanıyor...";
+
+        try {
+            const response = await fetch('/predict', { method: 'POST', body: formData });
+            const data = await response.json();
+            document.getElementById('resClass').innerText = data.class;
+            document.getElementById('resConf').innerText = data.confidence;
+            document.getElementById('resDesc').innerText = data.description;
+            document.getElementById('resultPanel').style.display = 'block';
+        } catch (e) { alert("Hata!"); }
+        finally { document.getElementById('runBtn').innerHTML = '<i class="fas fa-brain me-2"></i> ANALİZİ BAŞLAT'; }
+    }
+</script>
+</body>
+</html>
