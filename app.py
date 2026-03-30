@@ -76,7 +76,7 @@ def predict():
         'CBFB_MYH11': "AML with CBFB::MYH11 fusion. WHO 2022 sınıflamasına göre genetik anomali tespit edildi.",
         'NPM1': "AML with NPM1 mutation. En yaygın AML mutasyonlarından biridir.",
         'PML_RARA': "APL with PML::RARA fusion. Acil müdahale gerektiren sitomorfolojik yapı.",
-        'control': "Normal/Sağlıklı hücre yapısı. Herhangi bir lösemik anomali saptanmadı.",''
+        'control': "Normal/Sağlıklı hücre yapısı. Herhangi bir lösemik anomali saptanmadı.",
         'RUNX1_RUNX1T1': "AML with RUNX1::RUNX1T1 fusion. Belirgin morfolojik granülasyonlar içerebilir."
 
 
