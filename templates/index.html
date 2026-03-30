@@ -17,6 +17,9 @@
         #previewImg { max-height: 200px; border-radius: 8px; display: none; margin: 15px auto; border: 1px solid #ddd; }
         .result-panel { display: none; background: #eef9f1; border-left: 5px solid #28a745; padding: 15px; border-radius: 8px; }
         .eval-img { width: 100%; border-radius: 8px; border: 1px solid #eee; }
+        
+        /* Tablo yazı boyutunu mobilde daha okunaklı yapmak için */
+        .metrics-table { font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -32,26 +35,61 @@
     <div class="row g-3">
         
         <div class="col-lg-4">
+            <div class="card p-3 mb-3">
+                <h6 class="fw-bold border-bottom pb-2 mb-2">PROJE HAKKINDA</h6>
+                <p class="small text-muted mb-2">
+                    <strong>Amaç:</strong> Akut Miyeloid Lösemi (AML) teşhisinde mikroskobik inceleme sürecini yapay zeka ile hızlandırarak uzmanlara karar destek mekanizması sunmak.
+                </p>
+                <p class="small text-muted mb-0">
+                    <strong>Veri Kaynağı:</strong> Kaggle (human-aml-cytomorphology-dataset)
+                </p>
+            </div>
+
+            <div class="card p-3 mb-3">
+                <h6 class="fw-bold border-bottom pb-2 mb-3">VERİ & MODEL BİLEŞENLERİ</h6>
+                <div class="d-flex justify-content-between mb-2 small"><span>Toplam / Eğitim:</span><span class="fw-bold text-primary">81K / 64K</span></div>
+                <div class="d-flex justify-content-between mb-2 small"><span>Ön İşleme:</span><span class="fw-bold">144x144 px, 1./255 Norm.</span></div>
+                <div class="d-flex justify-content-between mb-2 small"><span>Model Mimarisi:</span><span class="fw-bold">Custom CNN (3x Conv2D)</span></div>
+                <div class="d-flex justify-content-between mb-2 small"><span>Hiperparametreler:</span><span class="fw-bold">20 Epoch, Dropout (0.5)</span></div>
+            </div>
+            
             <div class="card p-3 h-100">
-                <h6 class="fw-bold border-bottom pb-2 mb-3">VERİ SETİ ÖZETİ</h6>
-                <div class="d-flex justify-content-between mb-2"><span>Toplam Görüntü:</span><span class="fw-bold text-primary">81,214</span></div>
-                <div class="d-flex justify-content-between mb-2"><span>Eğitim Seti:</span><span class="fw-bold text-muted">64,972</span></div>
-                <div class="d-flex justify-content-between mb-4"><span>Çözünürlük:</span><span class="fw-bold">144x144 px</span></div>
-                
-                <h6 class="fw-bold border-bottom pb-2 mb-3">MODEL PERFORMANSI</h6>
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between small"><span>Genel Doğruluk (Accuracy)</span><span class="fw-bold text-success">%{{ (metrics.accuracy * 100)|int }}</span></div>
-                    <div class="progress" style="height: 6px;"><div class="progress-bar bg-success" style="width: 59%"></div></div>
+                <h6 class="fw-bold border-bottom pb-2 mb-3">DETAYLI PERFORMANS METRİKLERİ</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover text-center align-middle metrics-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-start">Sınıf</th>
+                                <th>Precision</th>
+                                <th>Recall</th>
+                                <th>F1-Score</th>
+                                <th>Support</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="text-start fw-bold">CBFB_MYH11</td><td>0.51</td><td>0.36</td><td>0.42</td><td>1726</td></tr>
+                            <tr><td class="text-start fw-bold">NPM1</td><td>0.53</td><td>0.59</td><td>0.56</td><td>1774</td></tr>
+                            <tr><td class="text-start fw-bold">PML_RARA</td><td>0.56</td><td>0.39</td><td>0.46</td><td>1121</td></tr>
+                            <tr><td class="text-start fw-bold">RUNX1_RUNX1T1</td><td>0.48</td><td>0.61</td><td>0.54</td><td>1490</td></tr>
+                            <tr class="table-success"><td class="text-start fw-bold">control</td><td>0.78</td><td>0.87</td><td>0.82</td><td>2003</td></tr>
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td class="text-start fw-bold text-primary">Genel Doğruluk (Accuracy)</td>
+                                <td colspan="3" class="text-center fw-bold text-primary">%59</td>
+                                <td class="fw-bold text-primary">8114</td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between small"><span>Sağlıklı Hücre Tanıma (Control F1)</span><span class="fw-bold text-info">%82</span></div>
-                    <div class="progress" style="height: 6px;"><div class="progress-bar bg-info" style="width: 82%"></div></div>
-                </div>
+                <p class="small text-muted mt-2 mb-0" style="font-size: 0.75rem;">
+                    <em>*Yorum: Model sağlıklı hücreleri (control) tespit etmekte yüksek başarı (%82 F1) göstermiştir. Ancak AML mutasyon türleri morfolojik olarak birbirine çok benzediği için çapraz karışıklıklar yaşanmış ve genel doğruluk %59'da kalmıştır.</em>
+                </p>
             </div>
         </div>
 
         <div class="col-lg-8">
-            <div class="card p-3">
+            <div class="card p-3 h-100">
                 <h6 class="fw-bold text-center mb-2">SINIF BAZLI GÖRÜNTÜ DAĞILIMI (TOTAL 81K)</h6>
                 <div class="chart-container">
                     <canvas id="barChart"></canvas>
@@ -71,7 +109,7 @@
                     </div>
                     <div class="col-md-7">
                         <img id="previewImg" src="#" alt="Önizleme">
-                        <div id="resultPanel" class="result-panel shadow-sm">
+                        <div id="resultPanel" class="result-panel shadow-sm mt-3 mt-md-0">
                             <h5 id="resClass" class="fw-bold text-dark mb-1">--</h5>
                             <p id="resDesc" class="text-muted small mb-2"></p>
                             <div class="d-flex justify-content-between border-top pt-2">
@@ -105,9 +143,17 @@
     </div>
 </div>
 
+<footer class="text-center mt-2 pb-4">
+    <div class="container">
+        <hr class="w-50 mx-auto text-muted">
+        <p class="small text-muted mb-0">
+            <strong>Kaynakça:</strong> [1] WHO 2022 Classification of Haematolymphoid Tumours. [2] Kaggle: human-aml-cytomorphology-dataset. [3] Keras/TensorFlow Kütüphanesi.
+        </p>
+    </div>
+</footer>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // --- Bar Chart (Sonsuz büyüme engellenmiş) ---
     const ctx = document.getElementById('barChart').getContext('2d');
     new Chart(ctx, {
         type: 'bar',
@@ -155,7 +201,7 @@
             document.getElementById('resConf').innerText = data.confidence;
             document.getElementById('resDesc').innerText = data.description;
             document.getElementById('resultPanel').style.display = 'block';
-        } catch (e) { alert("Hata!"); }
+        } catch (e) { alert("Sunucu ile bağlantı kurulamadı veya bir hata oluştu!"); }
         finally { document.getElementById('runBtn').innerHTML = '<i class="fas fa-brain me-2"></i> ANALİZİ BAŞLAT'; }
     }
 </script>
